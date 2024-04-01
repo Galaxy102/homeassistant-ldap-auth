@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/Galaxy102/homeassistant-ldap-auth/internal/homeassistant"
 	ldapClient "github.com/go-ldap/ldap/v3"
-	"hass-ldap/internal/homeassistant"
 )
 
 func ConnectAndReadUser(ldapConfig Config, credentials homeassistant.UsernameAndPassword) (*ldapClient.Entry, error) {

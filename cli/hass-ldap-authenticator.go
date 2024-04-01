@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"hass-ldap/internal/homeassistant"
-	"hass-ldap/internal/ldap"
+	"github.com/Galaxy102/homeassistant-ldap-auth/internal/homeassistant"
+	"github.com/Galaxy102/homeassistant-ldap-auth/internal/ldap"
 	"log"
 )
 
@@ -24,5 +24,8 @@ func main() {
 		log.Fatal(fmt.Errorf("could not perform ldap auth: %v", err))
 	}
 
-	homeassistant.PrintEntry(*ldapResult, ldapConfig.DisplayNameAttr)
+	homeassistant.PrintEntry(homeassistant.UserData{
+		DisplayName: ldapResult.GetAttributeValue(ldapConfig.DisplayNameAttr),
+		Group:       "system-users",
+	})
 }

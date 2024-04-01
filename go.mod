@@ -1,4 +1,4 @@
-module hass-ldap
+module github.com/Galaxy102/homeassistant-ldap-auth
 
 go 1.22.0
 

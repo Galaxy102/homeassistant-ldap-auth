@@ -3,13 +3,17 @@ package homeassistant
 import (
 	"errors"
 	"fmt"
-	"github.com/go-ldap/ldap/v3"
 	"os"
 )
 
 type UsernameAndPassword struct {
 	Username string
 	Password string
+}
+
+type UserData struct {
+	DisplayName string
+	Group       string
 }
 
 func ReadUsernameAndPassword(target *UsernameAndPassword) error {
@@ -23,7 +27,7 @@ func ReadUsernameAndPassword(target *UsernameAndPassword) error {
 	return nil
 }
 
-func PrintEntry(entry ldap.Entry, displayNameAttr string) {
-	fmt.Printf("name = %s\n", entry.GetAttributeValue(displayNameAttr))
-	fmt.Printf("group = system-users")
+func PrintEntry(data UserData) {
+	fmt.Printf("name = %s\n", data.DisplayName)
+	fmt.Printf("group = %s\n", data.Group)
 }
