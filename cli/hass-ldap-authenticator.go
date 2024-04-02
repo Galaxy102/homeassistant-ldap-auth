@@ -5,6 +5,7 @@ import (
 	"github.com/Galaxy102/homeassistant-ldap-auth/internal/homeassistant"
 	"github.com/Galaxy102/homeassistant-ldap-auth/internal/ldap"
 	"log"
+	"os"
 )
 
 func main() {
@@ -13,19 +14,21 @@ func main() {
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not read credentials: %v", err))
 	}
-	ldapConfig := ldap.Config{}
-	err = ldap.ReadLdapConfig(&ldapConfig)
+	configCli := ldap.NewConfigCli()
+	_ = configCli.Flags.Parse(os.Args[1:]) // Errors are handled by flag
+	err = configCli.Validate()
 	if err != nil {
+		configCli.Flags.Usage()
 		log.Fatal(fmt.Errorf("could not read ldap config: %v", err))
 	}
 
-	ldapResult, err := ldap.ConnectAndReadUser(ldapConfig, credentials)
+	ldapResult, err := ldap.ConnectAndReadUser(configCli.LdapConfig, credentials)
 	if err != nil {
 		log.Fatal(fmt.Errorf("could not perform ldap auth: %v", err))
 	}
 
 	homeassistant.PrintEntry(homeassistant.UserData{
-		DisplayName: ldapResult.GetAttributeValue(ldapConfig.DisplayNameAttr),
+		DisplayName: ldapResult.GetAttributeValue(configCli.LdapConfig.DisplayNameAttr),
 		Group:       "system-users",
 	})
 }

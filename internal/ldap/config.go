@@ -2,7 +2,7 @@ package ldap
 
 import (
 	"errors"
-	"os"
+	"flag"
 	"strings"
 )
 
@@ -21,42 +21,45 @@ type Config struct {
 	DisplayNameAttr string
 }
 
-func ReadLdapConfig(target *Config) error {
-	bindUsername, useBind := os.LookupEnv("LDAP_AUTH_BIND_USER")
-	bindPassword := os.Getenv("LDAP_AUTH_BIND_PASSWORD")
+type Cli struct {
+	Flags      *flag.FlagSet
+	LdapConfig Config
+}
 
-	ldapUrl, set := os.LookupEnv("LDAP_AUTH_URI")
-	if !set {
-		return errors.New("env var LDAP_AUTH_URI must be set")
-	}
-	baseDn, set := os.LookupEnv("LDAP_AUTH_BASE_DN")
-	if !set {
-		return errors.New("env var LDAP_AUTH_BASE_DN must be set")
-	}
+func NewConfigCli() *Cli {
+	result := &Cli{}
+	result.Flags = flag.NewFlagSet("", flag.ExitOnError)
+	result.Flags.BoolVar(&result.LdapConfig.UseBind, "bind", false, "Enable Bind Authentication. Set bind-user and bind-password accordingly")
+	result.Flags.StringVar(&result.LdapConfig.Bind.BindUser, "bind-user", "", "Perform Bind with the given DN")
+	result.Flags.StringVar(&result.LdapConfig.Bind.Password, "bind-password", "", "Password for Bind DN")
+	result.Flags.StringVar(&result.LdapConfig.Uri, "url", "", "URL of LDAP server, e.g. ldaps://foo.bar:636")
+	result.Flags.StringVar(&result.LdapConfig.BaseDN, "base-dn", "", "Base DN to search, e.g. dc=foo,dc=bar")
+	result.Flags.StringVar(&result.LdapConfig.UserFilter, "user-filter", "", "User filter to apply. Put %s for username, e.g. (uid=%s)")
+	result.Flags.BoolVar(&result.LdapConfig.UseStartTLS, "starttls", false, "Use StartTLS to connect")
+	result.Flags.StringVar(&result.LdapConfig.DisplayNameAttr, "displayname-attribute", "displayName", "LDAP attribute containing the user's display name")
+	return result
+}
 
-	userFilter, set := os.LookupEnv("LDAP_AUTH_USER_FILTER")
-	if !set {
-		return errors.New("env var LDAP_AUTH_USER_FILTER must be set")
-	}
-	if !strings.Contains(userFilter, "%s") {
-		return errors.New("env var LDAP_AUTH_USER_FILTER must contain a placeholder '%s' where username is placed, e.g. (uid=%s)")
-	}
-
-	startTlsString, set := os.LookupEnv("LDAP_AUTH_STARTTLS")
-	useStartTls := strings.ToLower(startTlsString) == "true"
-
-	displayNameAttr, set := os.LookupEnv("LDAP_AUTH_DISPLAY_NAME_ATTR")
-	if !set {
-		displayNameAttr = "displayName"
+func (config *Cli) Validate() error {
+	if !config.Flags.Parsed() {
+		return errors.New("flags have not yet been parsed")
 	}
 
-	target.Uri = ldapUrl
-	target.UseStartTLS = useStartTls
-	target.UseBind = useBind
-	target.Bind.BindUser = bindUsername
-	target.Bind.Password = bindPassword
-	target.BaseDN = baseDn
-	target.UserFilter = userFilter
-	target.DisplayNameAttr = displayNameAttr
+	if "" == config.LdapConfig.Uri {
+		return errors.New("url must not be empty")
+	}
+	if "" == config.LdapConfig.BaseDN {
+		return errors.New("base-dn must not be empty")
+	}
+	if "" == config.LdapConfig.UserFilter {
+		return errors.New("user-filter must not be empty")
+	}
+	if !strings.Contains(config.LdapConfig.UserFilter, "%s") {
+		return errors.New("user-filter must contain a placeholder '%s' where username is placed, e.g. (uid=%s)")
+	}
+	if config.LdapConfig.UseBind && ("" == config.LdapConfig.Bind.BindUser || "" == config.LdapConfig.Bind.Password) {
+		return errors.New("if bind is set, bind-user and bind-password must also be set")
+	}
+
 	return nil
 }
