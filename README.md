@@ -42,6 +42,7 @@ homeassistant:
 | `--bind-password string`         | Password of Bind User                                                       | When authenticated bind is required |
 | `--user-filter string`           | Filter to apply for search. Put `%s` where you expect `username`            | yes                                 |
 | `--displayname-attribute string` | LDAP attribute that contains the name that should be shown in HomeAssistant | defaults to `displayName`           |
+| `--authenticate-admion`          | Add users to admin group instead of users                                   | defaults to `false`                 |
 
 ## Environment variables
 

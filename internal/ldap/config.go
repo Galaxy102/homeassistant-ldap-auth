@@ -12,13 +12,14 @@ type BindConfig struct {
 }
 
 type Config struct {
-	Uri             string
-	UseStartTLS     bool
-	UseBind         bool
-	Bind            BindConfig
-	BaseDN          string
-	UserFilter      string
-	DisplayNameAttr string
+	Uri               string
+	UseStartTLS       bool
+	UseBind           bool
+	Bind              BindConfig
+	BaseDN            string
+	UserFilter        string
+	DisplayNameAttr   string
+	AuthenticateAdmin bool
 }
 
 type Cli struct {
@@ -37,6 +38,7 @@ func NewConfigCli() *Cli {
 	result.Flags.StringVar(&result.LdapConfig.UserFilter, "user-filter", "", "User filter to apply. Put %s for username, e.g. (uid=%s)")
 	result.Flags.BoolVar(&result.LdapConfig.UseStartTLS, "starttls", false, "Use StartTLS to connect")
 	result.Flags.StringVar(&result.LdapConfig.DisplayNameAttr, "displayname-attribute", "displayName", "LDAP attribute containing the user's display name")
+	result.Flags.BoolVar(&result.LdapConfig.AuthenticateAdmin, "authenticate-admin", false, "Make any authenticated user an admin")
 	return result
 }
 

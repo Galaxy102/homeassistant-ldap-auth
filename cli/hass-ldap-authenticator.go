@@ -27,8 +27,12 @@ func main() {
 		log.Fatal(fmt.Errorf("could not perform ldap auth: %v", err))
 	}
 
+	group := "system-users"
+	if configCli.LdapConfig.AuthenticateAdmin {
+		group = "system-admin"
+	}
 	homeassistant.PrintEntry(homeassistant.UserData{
 		DisplayName: ldapResult.GetAttributeValue(configCli.LdapConfig.DisplayNameAttr),
-		Group:       "system-users",
+		Group:       group,
 	})
 }
